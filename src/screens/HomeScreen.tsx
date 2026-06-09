@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
@@ -11,44 +11,59 @@ export default function HomeScreen({ navigation }: any) {
   const [open, setOpen] = useState<Story[]>([]);
   const [finished, setFinished] = useState<Story[]>([]);
 
-  useEffect(() => {
-    fetchStories();
-    const subscription = supabase
-      .channel('stories_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => fetchStories())
-      .subscribe();
-    return () => subscription.unsubscribe();
-  }, []);
+  const fetchStories = useCallback(async () => {
+    if (!user) return;
 
-  const fetchStories = async () => {
-    // Participating
+    // 1. Récupérer les IDs des histoires rejointes
     const { data: participants } = await supabase
       .from('story_participants')
       .select('story_id')
-      .eq('user_id', user!.id);
+      .eq('user_id', user.id);
     const pIds = participants?.map(p => p.story_id) || [];
+
+    // 2. Mes histoires
     if (pIds.length) {
       const { data } = await supabase.from('stories').select('*').in('id', pIds);
       setParticipating(data as Story[] || []);
-    } else setParticipating([]);
+    } else {
+      setParticipating([]);
+    }
 
-    // Open
-    const { data: openData } = await supabase
+    // 3. Histoires ouvertes (publiques, non rejointes)
+    let openQuery = supabase
       .from('stories')
       .select('*')
       .eq('is_public', true)
-      .in('status', ['open', 'in_progress'])
-      .not('id', 'in', `(${pIds.join(',') || 'null'})`);
+      .in('status', ['open', 'in_progress']);
+
+    if (pIds.length > 0) {
+      openQuery = openQuery.not('id', 'in', `(${pIds.join(',')})`);
+    }
+
+    const { data: openData } = await openQuery;
     setOpen(openData as Story[] || []);
 
-    // Finished
+    // 4. Histoires terminées
     const { data: finishedData } = await supabase
       .from('stories')
       .select('*')
       .eq('status', 'finished')
       .order('created_at', { ascending: false });
     setFinished(finishedData as Story[] || []);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchStories();
+    const subscription = supabase
+      .channel('stories_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => {
+        fetchStories();
+      })
+      .subscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [fetchStories]);
 
   const renderSection = (title: string, stories: Story[], emptyMsg: string) => (
     <View style={styles.section}>

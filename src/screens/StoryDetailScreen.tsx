@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Story, Turn, StoryParagraph } from '../types';
@@ -15,17 +15,9 @@ export default function StoryDetailScreen({ route, navigation }: any) {
   const [isParticipant, setIsParticipant] = useState(false);
   const [blindMode, setBlindMode] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-    const subscription = supabase
-      .channel(`story_${storyId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'story_paragraphs', filter: `story_id=eq.${storyId}` }, () => fetchData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'turns', filter: `story_id=eq.${storyId}` }, () => fetchData())
-      .subscribe();
-    return () => subscription.unsubscribe();
-  }, [storyId]);
+  const fetchData = useCallback(async () => {
+    if (!user) return;
 
-  const fetchData = async () => {
     // Story
     const { data: storyData } = await supabase.from('stories').select('*').eq('id', storyId).single();
     setStory(storyData as Story);
@@ -43,7 +35,7 @@ export default function StoryDetailScreen({ route, navigation }: any) {
       .from('story_participants')
       .select('*')
       .eq('story_id', storyId)
-      .eq('user_id', user!.id)
+      .eq('user_id', user.id)
       .single();
     setIsParticipant(!!participant);
 
@@ -61,7 +53,7 @@ export default function StoryDetailScreen({ route, navigation }: any) {
         .from('proposals')
         .select('id')
         .eq('turn_id', turn.id)
-        .eq('author_id', user!.id)
+        .eq('author_id', user.id)
         .maybeSingle();
       const alreadyProposed = !!proposal;
       setHasProposed(alreadyProposed);
@@ -69,10 +61,27 @@ export default function StoryDetailScreen({ route, navigation }: any) {
     } else {
       setBlindMode(false);
     }
-  };
+  }, [storyId, user]);
+
+  useEffect(() => {
+    fetchData();
+    const subscription = supabase
+      .channel(`story_${storyId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'story_paragraphs', filter: `story_id=eq.${storyId}` }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'turns', filter: `story_id=eq.${storyId}` }, () => {
+        fetchData();
+      })
+      .subscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [storyId, fetchData]);
 
   const joinStory = async () => {
-    await supabase.from('story_participants').insert({ story_id: storyId, user_id: user!.id });
+    if (!user) return;
+    await supabase.from('story_participants').insert({ story_id: storyId, user_id: user.id });
     fetchData();
   };
 

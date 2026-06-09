@@ -1,25 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Proposal } from '../types';
 
 export default function VoteScreen({ route }: any) {
-  const { turnId, storyId } = route.params;
+  const { turnId } = route.params;
   const { user } = useAuth();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [userVote, setUserVote] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProposals();
-    const subscription = supabase
-      .channel(`votes_${turnId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes', filter: `turn_id=eq.${turnId}` }, () => fetchProposals())
-      .subscribe();
-    return () => subscription.unsubscribe();
-  }, [turnId]);
+  const fetchProposals = useCallback(async () => {
+    if (!user) return;
 
-  const fetchProposals = async () => {
     const { data: props } = await supabase
       .from('proposals')
       .select('*, author:profiles(username), vote_count')
@@ -31,24 +24,38 @@ export default function VoteScreen({ route }: any) {
       .from('votes')
       .select('proposal_id')
       .eq('turn_id', turnId)
-      .eq('user_id', user!.id)
+      .eq('user_id', user.id)
       .maybeSingle();
     if (existingVote) setUserVote(existingVote.proposal_id);
-  };
+  }, [turnId, user]);
+
+  useEffect(() => {
+    fetchProposals();
+    const subscription = supabase
+      .channel(`votes_${turnId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'votes', filter: `turn_id=eq.${turnId}` }, () => {
+        fetchProposals();
+      })
+      .subscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [turnId, fetchProposals]);
 
   const handleVote = async (proposalId: string) => {
+    if (!user) return;
     if (userVote) {
       Alert.alert('Vous avez déjà voté pour ce tour');
       return;
     }
     const proposal = proposals.find(p => p.id === proposalId);
-    if (proposal?.author_id === user!.id) {
+    if (proposal?.author_id === user.id) {
       Alert.alert('Vous ne pouvez pas voter pour votre propre proposition');
       return;
     }
     const { error } = await supabase.from('votes').insert({
       proposal_id: proposalId,
-      user_id: user!.id,
+      user_id: user.id,
       turn_id: turnId,
     });
     if (!error) {
