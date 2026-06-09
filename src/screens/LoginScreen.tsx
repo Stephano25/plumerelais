@@ -16,7 +16,16 @@ export default function LoginScreen({ navigation }: any) {
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
-    if (error) Alert.alert('Erreur', error.message);
+    if (error) {
+      console.log('Erreur connexion :', error);
+      if (error.message?.includes('Invalid login credentials')) {
+        Alert.alert('Erreur', 'Email ou mot de passe incorrect');
+      } else if (error.message?.includes('Email not confirmed')) {
+        Alert.alert('Email non confirmé', 'Veuillez vérifier votre boîte de réception et confirmer votre email.');
+      } else {
+        Alert.alert('Erreur', error.message || 'Une erreur est survenue lors de la connexion');
+      }
+    }
   };
 
   return (
