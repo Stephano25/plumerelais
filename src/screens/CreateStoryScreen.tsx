@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Switch, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Switch, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
+import { isWeb } from '../utils/platform';
 
 export default function CreateStoryScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -14,7 +15,20 @@ export default function CreateStoryScreen({ navigation }: any) {
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Pour le web, on utilise un input file natif
+  const handleWebImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const pickImage = async () => {
+    if (isWeb) return; // Utiliser le input file à la place
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -26,8 +40,15 @@ export default function CreateStoryScreen({ navigation }: any) {
   };
 
   const uploadImage = async (uri: string): Promise<string | null> => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    // Pour le web, on upload via fetch en base64
+    let blob: Blob;
+    if (isWeb) {
+      const response = await fetch(uri);
+      blob = await response.blob();
+    } else {
+      const response = await fetch(uri);
+      blob = await response.blob();
+    }
     const fileName = `${Date.now()}.jpg`;
     const { data, error } = await supabase.storage.from('covers').upload(fileName, blob);
     if (error) {
@@ -64,16 +85,13 @@ export default function CreateStoryScreen({ navigation }: any) {
       setLoading(false);
       return;
     }
-    // Ajouter l'auteur comme participant
     await supabase.from('story_participants').insert({ story_id: story.id, user_id: user!.id });
-    // Ajouter le premier paragraphe dans story_paragraphs (tour 0)
     await supabase.from('story_paragraphs').insert({
       story_id: story.id,
       turn_number: 0,
       author_id: user!.id,
       paragraph: openingParagraph,
     });
-    // Créer le premier tour
     const endsAt = new Date(Date.now() + parseInt(turnDuration) * 60000);
     await supabase.from('turns').insert({
       story_id: story.id,
@@ -98,10 +116,28 @@ export default function CreateStoryScreen({ navigation }: any) {
         <Text style={styles.label}>Histoire publique</Text>
         <Switch value={isPublic} onValueChange={setIsPublic} />
       </View>
-      <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-        <Text>{coverImage ? 'Changer l’image de couverture' : 'Ajouter une image de couverture'}</Text>
-      </TouchableOpacity>
+      
+      {/* Upload d'image : version mobile avec expo-image-picker, version web avec input file */}
+      {!isWeb ? (
+        <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+          <Text>{coverImage ? 'Changer l’image de couverture' : 'Ajouter une image de couverture'}</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.webImageContainer}>
+          <label htmlFor="cover-upload" style={styles.webLabel}>
+            {coverImage ? 'Changer l’image' : 'Ajouter une image (web)'}
+          </label>
+          <input
+            id="cover-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleWebImageUpload}
+            style={{ marginTop: 8 }}
+          />
+        </View>
+      )}
       {coverImage && <Text style={styles.fileName}>Image sélectionnée</Text>}
+      
       <TouchableOpacity style={styles.createButton} onPress={handleCreate} disabled={loading}>
         {loading ? <ActivityIndicator color="white" /> : <Text style={styles.buttonText}>Créer l'histoire</Text>}
       </TouchableOpacity>
@@ -116,6 +152,8 @@ const styles = StyleSheet.create({
   textArea: { height: 100, textAlignVertical: 'top' },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 12 },
   imageButton: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 8, alignItems: 'center', marginVertical: 8 },
+  webImageContainer: { marginVertical: 8, alignItems: 'center' },
+  webLabel: { backgroundColor: '#e0e0e0', padding: 12, borderRadius: 8, textAlign: 'center', width: '100%' },
   fileName: { fontSize: 12, color: 'gray', textAlign: 'center' },
   createButton: { backgroundColor: '#6200ee', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 20 },
   buttonText: { color: 'white', fontWeight: 'bold' },

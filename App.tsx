@@ -1,13 +1,18 @@
-import { useEffect } from 'react';
-import { AuthProvider, useAuth } from './src/contexts/AuthContext';
-import { registerForPushNotificationsAsync } from './src/services/notificationService';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { AuthProvider } from './src/contexts/AuthContext';
+import { StoriesProvider } from './src/contexts/StoriesContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import { registerForPushNotificationsAsync } from './src/services/notificationService';
+import { useAuth } from './src/contexts/AuthContext';
+import { isWeb } from './src/utils/platform';
 
 function AppContent() {
   const { user } = useAuth();
   useEffect(() => {
-    if (user) registerForPushNotificationsAsync(user.id);
+    if (!isWeb && user) {
+      registerForPushNotificationsAsync(user.id);
+    }
   }, [user]);
   return <AppNavigator />;
 }
@@ -15,9 +20,11 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <AppContent />
-      </NavigationContainer>
+      <StoriesProvider>
+        <NavigationContainer>
+          <AppContent />
+        </NavigationContainer>
+      </StoriesProvider>
     </AuthProvider>
   );
 }

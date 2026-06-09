@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Story } from '../types';
 
 interface Props {
@@ -8,10 +8,12 @@ interface Props {
 }
 
 export default function StoryCard({ story, onPress }: Props) {
+  // Sur le web, les images distantes fonctionnent normalement
+  const imageSource = story.cover_image ? { uri: story.cover_image } : null;
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      {story.cover_image ? (
-        <Image source={{ uri: story.cover_image }} style={styles.cover} />
+      {imageSource ? (
+        <Image source={imageSource} style={styles.cover} />
       ) : (
         <View style={[styles.cover, styles.placeholder]} />
       )}
@@ -25,7 +27,7 @@ export default function StoryCard({ story, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { width: 160, marginHorizontal: 8, borderRadius: 8, overflow: 'hidden', backgroundColor: '#fff', elevation: 2 },
+  card: { width: 160, marginHorizontal: 8, borderRadius: 8, overflow: 'hidden', backgroundColor: '#fff', elevation: 2, ...(Platform.OS === 'web' ? { boxShadow: '0 2px 4px rgba(0,0,0,0.1)' } : {}) },
   cover: { width: '100%', height: 100 },
   placeholder: { backgroundColor: '#ddd' },
   info: { padding: 8 },
