@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { supabase } from '../services/supabase';
 import { Profile } from '../types';
-import { Session, User } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
@@ -34,23 +34,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setProfile(null);
       }
     });
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
+    return () => listener?.subscription.unsubscribe();
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-    setProfile(data);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle(); // Utilise maybeSingle() au lieu de single() pour éviter l'erreur 406 si rien n'est trouvé
+
+    if (!error && data) {
+      setProfile(data);
+    } else {
+      console.warn('Profil non trouvé ou erreur:', error);
+    }
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (!error && data.user) {
-      await supabase.from('profiles').insert({ id: data.user.id, username });
+    // 1. Inscription via Supabase Auth (le déclencheur SQL va automatiquement créer le profil)
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username } // Transmettre le pseudo dans les métadonnées
+      }
+    });
+
+    if (error) {
+      console.error('Erreur signUp:', error);
+      return { error };
+    }
+
+    // 2. Si l'utilisateur est immédiatement connecté (pas de confirmation email),
+    //    on rafraîchit le profil. Sinon, il faudra attendre la confirmation.
+    if (data.user && data.session) {
       await fetchProfile(data.user.id);
     }
-    return { error };
+
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
