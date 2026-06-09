@@ -2,8 +2,14 @@ import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'VOTRE_URL_SUPABASE';      // À remplacer
-const supabaseAnonKey = 'VOTRE_CLE_ANON';      // À remplacer
+// Lecture des variables d'environnement (préfixées EXPO_PUBLIC_)
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+// Vérification
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Check your .env file and restart Expo with --clear.');
+}
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
