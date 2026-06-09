@@ -22,8 +22,8 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "supabaseUrl": "https://dstxatslapzpzeihgme.supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzdGF4YXRzbGFwenB6ZWloZ21lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NTg3NjIsImV4cCI6MjA5NjUzNDc2Mn0.zYIs-a2kHCfZxB5kT6StnHhwZS8--JvXoLo8BX7EeJQ"
+      "supabaseUrl": "https://dstaxatslapzpzeihgme.supabase.co",
+      "supabaseAnonKey": "sb_publishable_v02g9AmXCnfctflAVOwhPA_COjF-tj4"
     }
   }
 }
