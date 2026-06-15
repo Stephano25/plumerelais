@@ -22,7 +22,10 @@
     },
     "extra": {
       "supabaseUrl": "https://nbfcgkpilfrqkbjvplqb.supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iZmNna3BpbGZycWtianZwbHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjEwNjgsImV4cCI6MjA5NjUzNzA2OH0.qAxHFKPQS7qodoei61L9OQ3UOpDkaCTd59pprQbsl-I"
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iZmNna3BpbGZycWtianZwbHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjEwNjgsImV4cCI6MjA5NjUzNzA2OH0.qAxHFKPQS7qodoei61L9OQ3UOpDkaCTd59pprQbsl-I",
+      "eas": {
+        "projectId": "7901a675-a156-448e-b800-8149579cd2e4"
+      }
     }
   }
 }
