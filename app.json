@@ -4,19 +4,22 @@
     "slug": "PlumeRelais",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/plumerelais.png",
     "userInterfaceStyle": "light",
-    "ios": { "supportsTablet": true },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.plumerelais.app"
+    },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/plumerelais.png",
+        "backgroundColor": "#6200ee"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "com.plumerelais.app"
     },
-    "web": { "favicon": "./assets/favicon.png" },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "extra": {
       "supabaseUrl": "https://nbfcgkpilfrqkbjvplqb.supabase.co",
       "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5iZmNna3BpbGZycWtianZwbHFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjEwNjgsImV4cCI6MjA5NjUzNzA2OH0.qAxHFKPQS7qodoei61L9OQ3UOpDkaCTd59pprQbsl-I"
