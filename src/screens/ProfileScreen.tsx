@@ -5,9 +5,22 @@ import { useAuth } from '../contexts/AuthContext';
 export default function ProfileScreen({ navigation }: any) {
   const { user, profile, signOut } = useAuth();
 
-  const handleLogout = async () => {
-    await signOut();
-    navigation.replace('Login');
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Voulez-vous vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Déconnecter',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+            // La navigation s'occupe du reste
+          },
+        },
+      ]
+    );
   };
 
   return (

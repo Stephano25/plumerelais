@@ -3,11 +3,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
 
-// Écrans d'auth
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-
-// Écrans principaux
 import HomeScreen from '../screens/HomeScreen';
 import CreateStoryScreen from '../screens/CreateStoryScreen';
 import StoryDetailScreen from '../screens/StoryDetailScreen';

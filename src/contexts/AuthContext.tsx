@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode } from
 import { supabase } from '../services/supabase';
 import { Profile } from '../types';
 import { User } from '@supabase/supabase-js';
+import { Alert } from 'react-native';
 
 interface AuthContextType {
   user: User | null;
@@ -42,36 +43,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .maybeSingle(); // Utilise maybeSingle() au lieu de single() pour éviter l'erreur 406 si rien n'est trouvé
-
-    if (!error && data) {
-      setProfile(data);
-    } else {
-      console.warn('Profil non trouvé ou erreur:', error);
-    }
+      .maybeSingle();
+    if (!error && data) setProfile(data);
+    else console.warn('Profil non trouvé:', error);
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    // 1. Inscription via Supabase Auth (le déclencheur SQL va automatiquement créer le profil)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { username } // Transmettre le pseudo dans les métadonnées
-      }
+      options: { data: { username } }
     });
-
-    if (error) {
-      console.error('Erreur signUp:', error);
-      return { error };
-    }
-
-    // 2. Si l'utilisateur est immédiatement connecté (pas de confirmation email),
-    //    on rafraîchit le profil. Sinon, il faudra attendre la confirmation.
-    if (data.user && data.session) {
-      await fetchProfile(data.user.id);
-    }
-
+    if (error) return { error };
+    if (data.user && data.session) await fetchProfile(data.user.id);
     return { error: null };
   };
 
@@ -81,8 +65,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null);
+      setProfile(null);
+      console.log('✅ Déconnexion réussie');
+    } catch (error) {
+      console.error('❌ Erreur déconnexion:', error);
+      Alert.alert('Erreur', 'Impossible de vous déconnecter');
+    }
   };
 
   return (
@@ -94,8 +86,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

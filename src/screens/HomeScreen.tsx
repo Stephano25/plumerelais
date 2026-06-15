@@ -1,49 +1,79 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../services/supabase';
 import { Story } from '../types';
 import StoryCard from '../components/StoryCard';
 
 export default function HomeScreen({ navigation }: any) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [participating, setParticipating] = useState<Story[]>([]);
   const [open, setOpen] = useState<Story[]>([]);
   const [finished, setFinished] = useState<Story[]>([]);
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Voulez-vous vraiment vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Déconnecter',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+            // Réinitialiser toute la pile de navigation (navigateur racine)
+            const parent = navigation.getParent();
+            if (parent) {
+              parent.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            } else {
+              // Fallback : reset local (moins fiable)
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={{ marginRight: 16 }}>
+          <Text style={{ color: '#fff', fontWeight: 'bold' }}>Déconnexion</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
   const fetchStories = useCallback(async () => {
     if (!user) return;
-
-    // 1. Récupérer les IDs des histoires rejointes
     const { data: participants } = await supabase
       .from('story_participants')
       .select('story_id')
       .eq('user_id', user.id);
     const pIds = participants?.map(p => p.story_id) || [];
 
-    // 2. Mes histoires
     if (pIds.length) {
       const { data } = await supabase.from('stories').select('*').in('id', pIds);
       setParticipating(data as Story[] || []);
-    } else {
-      setParticipating([]);
-    }
+    } else setParticipating([]);
 
-    // 3. Histoires ouvertes (publiques, non rejointes)
     let openQuery = supabase
       .from('stories')
       .select('*')
       .eq('is_public', true)
       .in('status', ['open', 'in_progress']);
-
-    if (pIds.length > 0) {
-      openQuery = openQuery.not('id', 'in', `(${pIds.join(',')})`);
-    }
-
+    if (pIds.length > 0) openQuery = openQuery.not('id', 'in', `(${pIds.join(',')})`);
     const { data: openData } = await openQuery;
     setOpen(openData as Story[] || []);
 
-    // 4. Histoires terminées
     const { data: finishedData } = await supabase
       .from('stories')
       .select('*')
@@ -56,13 +86,9 @@ export default function HomeScreen({ navigation }: any) {
     fetchStories();
     const subscription = supabase
       .channel('stories_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => {
-        fetchStories();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => fetchStories())
       .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [fetchStories]);
 
   const renderSection = (title: string, stories: Story[], emptyMsg: string) => (
@@ -72,7 +98,9 @@ export default function HomeScreen({ navigation }: any) {
         horizontal
         data={stories}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => <StoryCard story={item} onPress={() => navigation.navigate('StoryDetail', { storyId: item.id })} />}
+        renderItem={({ item }) => (
+          <StoryCard story={item} onPress={() => navigation.navigate('StoryDetail', { storyId: item.id })} />
+        )}
         ListEmptyComponent={<Text style={styles.emptyText}>{emptyMsg}</Text>}
       />
     </View>
