@@ -12,7 +12,6 @@ export default function HomeScreen({ navigation }: any) {
   const [finished, setFinished] = useState<Story[]>([]);
   const isMounted = useRef(true);
 
-  // Déconnexion mémorisée pour éviter les recréations
   const handleLogout = useCallback(() => {
     Alert.alert(
       'Déconnexion',
@@ -24,20 +23,13 @@ export default function HomeScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             await signOut();
-            // Réinitialiser le navigateur racine
-            const parent = navigation.getParent();
-            if (parent) {
-              parent.reset({ index: 0, routes: [{ name: 'Login' }] });
-            } else {
-              navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-            }
+            navigation.replace('Login');
           },
         },
       ]
     );
   }, [signOut, navigation]);
 
-  // Configuration du bouton dans le header
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -48,7 +40,6 @@ export default function HomeScreen({ navigation }: any) {
     });
   }, [navigation, handleLogout]);
 
-  // Récupération des histoires
   const fetchStories = useCallback(async () => {
     if (!user || !isMounted.current) return;
     try {
@@ -58,13 +49,11 @@ export default function HomeScreen({ navigation }: any) {
         .eq('user_id', user.id);
       const pIds = participants?.map(p => p.story_id) || [];
 
-      // Histoires participatives
       if (pIds.length) {
         const { data } = await supabase.from('stories').select('*').in('id', pIds);
         if (isMounted.current) setParticipating(data as Story[] || []);
       } else if (isMounted.current) setParticipating([]);
 
-      // Histoires ouvertes (exclure celles rejointes)
       let openQuery = supabase
         .from('stories')
         .select('*')
@@ -74,7 +63,6 @@ export default function HomeScreen({ navigation }: any) {
       const { data: openData } = await openQuery;
       if (isMounted.current) setOpen(openData as Story[] || []);
 
-      // Histoires terminées
       const { data: finishedData } = await supabase
         .from('stories')
         .select('*')
@@ -86,18 +74,13 @@ export default function HomeScreen({ navigation }: any) {
     }
   }, [user]);
 
-  // Effet principal : chargement initial + temps réel
   useEffect(() => {
     isMounted.current = true;
     fetchStories();
-
     const subscription = supabase
       .channel('stories_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => {
-        if (isMounted.current) fetchStories();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => fetchStories())
       .subscribe();
-
     return () => {
       isMounted.current = false;
       subscription.unsubscribe();
@@ -147,11 +130,9 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    // Correction de l’avertissement "shadow*" → utilisation de boxShadow
+    boxShadow: '0px 2px 4px rgba(0,0,0,0.3)',
+    elevation: 5, // pour Android
   },
   fabText: { color: 'white', fontSize: 28, fontWeight: 'bold', lineHeight: 32 },
 });

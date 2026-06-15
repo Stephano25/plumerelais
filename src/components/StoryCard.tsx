@@ -8,7 +8,6 @@ interface Props {
 }
 
 export default function StoryCard({ story, onPress }: Props) {
-  // Sur le web, les images distantes fonctionnent normalement
   const imageSource = story.cover_image ? { uri: story.cover_image } : null;
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
@@ -27,7 +26,20 @@ export default function StoryCard({ story, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: { width: 160, marginHorizontal: 8, borderRadius: 8, overflow: 'hidden', backgroundColor: '#fff', elevation: 2, ...(Platform.OS === 'web' ? { boxShadow: '0 2px 4px rgba(0,0,0,0.1)' } : {}) },
+  card: {
+    width: 160,
+    marginHorizontal: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    // Correction : remplacer elevation + shadow* par boxShadow
+    boxShadow: Platform.OS === 'web' ? '0 2px 4px rgba(0,0,0,0.1)' : undefined,
+    elevation: Platform.OS === 'android' ? 2 : undefined,
+    shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
+    shadowOffset: Platform.OS === 'ios' ? { width: 0, height: 2 } : undefined,
+    shadowOpacity: Platform.OS === 'ios' ? 0.1 : undefined,
+    shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+  },
   cover: { width: '100%', height: 100 },
   placeholder: { backgroundColor: '#ddd' },
   info: { padding: 8 },
