@@ -16,18 +16,7 @@ export default function ProfileScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             await signOut();
-            const parent = navigation.getParent();
-            if (parent) {
-              parent.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-            } else {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-            }
+            navigation.replace('Login');
           },
         },
       ]

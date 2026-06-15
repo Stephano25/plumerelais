@@ -12,6 +12,7 @@ export default function HomeScreen({ navigation }: any) {
   const [finished, setFinished] = useState<Story[]>([]);
   const isMounted = useRef(true);
 
+  // Déconnexion : on remplace la route Login dans le même navigateur
   const handleLogout = useCallback(() => {
     Alert.alert(
       'Déconnexion',
@@ -23,6 +24,7 @@ export default function HomeScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             await signOut();
+            // Retour à Login
             navigation.replace('Login');
           },
         },
@@ -30,6 +32,7 @@ export default function HomeScreen({ navigation }: any) {
     );
   }, [signOut, navigation]);
 
+  // Ajout d’un bouton dans l’en-tête (optionnel, mais le bouton principal sera dans le contenu)
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -108,6 +111,12 @@ export default function HomeScreen({ navigation }: any) {
       {renderSection('📚 Mes histoires', participating, 'Aucune histoire rejointe')}
       {renderSection('🌍 Histoires ouvertes', open, 'Aucune histoire ouverte')}
       {renderSection('🏁 Terminées', finished, 'Aucune histoire terminée')}
+      
+      {/* Bouton de déconnexion principal, bien visible */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreateStory')}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
@@ -120,6 +129,21 @@ const styles = StyleSheet.create({
   section: { marginVertical: 12 },
   sectionTitle: { fontSize: 22, fontWeight: 'bold', marginLeft: 16, marginBottom: 10, color: '#333' },
   emptyText: { marginLeft: 16, fontSize: 14, color: '#999', fontStyle: 'italic' },
+  logoutButton: {
+    backgroundColor: '#dc3545',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 80, // pour ne pas cacher le FAB
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   fab: {
     position: 'absolute',
     bottom: 20,
@@ -130,9 +154,8 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    // Correction de l’avertissement "shadow*" → utilisation de boxShadow
     boxShadow: '0px 2px 4px rgba(0,0,0,0.3)',
-    elevation: 5, // pour Android
+    elevation: 5,
   },
   fabText: { color: 'white', fontSize: 28, fontWeight: 'bold', lineHeight: 32 },
 });

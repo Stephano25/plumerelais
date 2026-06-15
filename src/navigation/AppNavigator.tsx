@@ -3,11 +3,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
 
-// Écrans d’auth
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-
-// Écrans principaux
 import HomeScreen from '../screens/HomeScreen';
 import CreateStoryScreen from '../screens/CreateStoryScreen';
 import StoryDetailScreen from '../screens/StoryDetailScreen';
@@ -30,23 +27,27 @@ export default function AppNavigator() {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: '#6200ee' },
+        headerTintColor: '#fff',
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    >
       {!user ? (
-        // Non connecté
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         </>
       ) : (
-        // Connecté
         <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: true, title: 'Plume Relais' }} />
-          <Stack.Screen name="CreateStory" component={CreateStoryScreen} options={{ headerShown: true, title: 'Nouvelle histoire' }} />
-          <Stack.Screen name="StoryDetail" component={StoryDetailScreen} options={{ headerShown: true, title: 'Histoire' }} />
-          <Stack.Screen name="Propose" component={ProposeScreen} options={{ headerShown: true, title: 'Proposer une suite' }} />
-          <Stack.Screen name="Vote" component={VoteScreen} options={{ headerShown: true, title: 'Voter' }} />
-          <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true, title: 'Mon profil' }} />
-          <Stack.Screen name="FinishedStory" component={FinishedStoryScreen} options={{ headerShown: true, title: 'Histoire complète' }} />
+          <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Plume Relais' }} />
+          <Stack.Screen name="CreateStory" component={CreateStoryScreen} options={{ title: 'Nouvelle histoire' }} />
+          <Stack.Screen name="StoryDetail" component={StoryDetailScreen} options={{ title: 'Histoire' }} />
+          <Stack.Screen name="Propose" component={ProposeScreen} options={{ title: 'Proposer une suite' }} />
+          <Stack.Screen name="Vote" component={VoteScreen} options={{ title: 'Voter' }} />
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Mon profil' }} />
+          <Stack.Screen name="FinishedStory" component={FinishedStoryScreen} options={{ title: 'Histoire complète' }} />
         </>
       )}
     </Stack.Navigator>
