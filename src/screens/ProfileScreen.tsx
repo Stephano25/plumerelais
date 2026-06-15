@@ -16,7 +16,18 @@ export default function ProfileScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             await signOut();
-            // La navigation s'occupe du reste
+            const parent = navigation.getParent();
+            if (parent) {
+              parent.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            } else {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            }
           },
         },
       ]
@@ -25,21 +36,45 @@ export default function ProfileScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profil</Text>
-      <Text style={styles.label}>Pseudo : {profile?.username}</Text>
-      <Text style={styles.label}>Email : {user?.email}</Text>
-      <Text style={styles.label}>Réputation : {profile?.reputation || 0}</Text>
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Se déconnecter</Text>
-      </TouchableOpacity>
+      <View style={styles.card}>
+        <Text style={styles.title}>👤 Mon profil</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>Pseudo :</Text>
+          <Text style={styles.value}>{profile?.username || 'Non défini'}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>Email :</Text>
+          <Text style={styles.value}>{user?.email}</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.label}>Réputation :</Text>
+          <Text style={styles.value}>⭐ {profile?.reputation || 0}</Text>
+        </View>
+        <TouchableOpacity style={styles.button} onPress={handleLogout}>
+          <Text style={styles.buttonText}>Se déconnecter</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 30 },
-  label: { fontSize: 16, marginBottom: 12 },
-  button: { backgroundColor: '#dc3545', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 30 },
-  buttonText: { color: 'white', fontWeight: 'bold' },
+  container: { flex: 1, backgroundColor: '#f5f5f5', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#6200ee' },
+  infoRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  label: { fontSize: 16, fontWeight: '600', color: '#555' },
+  value: { fontSize: 16, color: '#333' },
+  button: { backgroundColor: '#dc3545', padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 20 },
+  buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
 });
