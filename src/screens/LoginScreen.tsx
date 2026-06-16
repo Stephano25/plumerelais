@@ -1,3 +1,4 @@
+// screens/LoginScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
@@ -61,12 +62,63 @@ export default function LoginScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f2f5', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  card: { backgroundColor: '#fff', borderRadius: 24, padding: 24, width: '100%', maxWidth: 400, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
-  title: { fontSize: 36, fontWeight: 'bold', textAlign: 'center', color: '#6200ee', marginBottom: 8 },
-  subtitle: { fontSize: 14, textAlign: 'center', color: '#666', marginBottom: 32 },
-  input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 12, padding: 14, marginBottom: 16, fontSize: 16, backgroundColor: '#fafafa' },
-  button: { backgroundColor: '#6200ee', padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 8 },
-  buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-  link: { marginTop: 20, textAlign: 'center', color: '#6200ee', fontSize: 14, fontWeight: '500' },
+  container: { 
+    flex: 1, 
+    backgroundColor: '#f0f2f5', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    padding: 20 
+  },
+  card: { 
+    backgroundColor: '#fff', 
+    borderRadius: 24, 
+    padding: 24, 
+    width: '100%', 
+    maxWidth: 400, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.1, 
+    shadowRadius: 10, 
+    elevation: 5 
+  },
+  title: { 
+    fontSize: 36, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    color: '#6200ee', 
+    marginBottom: 8 
+  },
+  subtitle: { 
+    fontSize: 14, 
+    textAlign: 'center', 
+    color: '#666', 
+    marginBottom: 32 
+  },
+  input: { 
+    borderWidth: 1, 
+    borderColor: '#ddd', 
+    borderRadius: 12, 
+    padding: 14, 
+    marginBottom: 16, 
+    fontSize: 16, 
+    backgroundColor: '#fafafa' 
+  },
+  button: { 
+    backgroundColor: '#6200ee', 
+    padding: 14, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    marginTop: 8 
+  },
+  buttonText: { 
+    color: 'white', 
+    fontWeight: 'bold', 
+    fontSize: 16 
+  },
+  link: { 
+    marginTop: 20, 
+    textAlign: 'center', 
+    color: '#6200ee', 
+    fontSize: 14, 
+    fontWeight: '500' 
+  },
 });

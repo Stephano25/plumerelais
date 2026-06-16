@@ -1,15 +1,14 @@
 // screens/HomeScreen.tsx
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-import { useStories } from '../contexts/StoriesContext'; // ✅ Ajout
-import { supabase } from '../services/supabase';
+import { useStories } from '../contexts/StoriesContext';
 import { Story } from '../types';
 import StoryCard from '../components/StoryCard';
 
 export default function HomeScreen({ navigation }: any) {
   const { user, signOut } = useAuth();
-  const { participatingStories, openStories, finishedStories, refreshStories } = useStories(); // ✅ Utiliser le contexte
+  const { participatingStories, openStories, finishedStories, refreshStories } = useStories();
 
   const handleLogout = useCallback(() => {
     Alert.alert(
@@ -40,7 +39,7 @@ export default function HomeScreen({ navigation }: any) {
   }, [navigation, handleLogout]);
 
   useEffect(() => {
-    refreshStories(); // ✅ Rafraîchir au montage
+    refreshStories();
   }, [refreshStories]);
 
   const renderSection = (title: string, stories: Story[], emptyMsg: string) => (

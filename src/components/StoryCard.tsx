@@ -1,5 +1,6 @@
+// components/StoryCard.tsx
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Story } from '../types';
 
 interface Props {
@@ -18,14 +19,15 @@ export default function StoryCard({ story, onPress }: Props) {
       )}
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>{story.title}</Text>
-        <Text style={styles.status}>Statut : {story.status === 'open' ? 'Ouverte' : story.status === 'in_progress' ? 'En cours' : 'Terminée'}</Text>
+        <Text style={styles.status}>
+          Statut : {story.status === 'open' ? 'Ouverte' : story.status === 'in_progress' ? 'En cours' : 'Terminée'}
+        </Text>
         <Text style={styles.turns}>Tours : {story.current_turn}/{story.max_contributions}</Text>
       </View>
     </TouchableOpacity>
   );
 }
 
-// components/StoryCard.tsx
 const styles = StyleSheet.create({
   card: {
     width: 160,
@@ -33,7 +35,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    // ⚠️ Correction : remplacer boxShadow par shadow* pour toutes les plateformes
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
