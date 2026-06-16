@@ -5,9 +5,10 @@ import { Text, StyleSheet } from 'react-native';
 interface Props {
   endTime: string;
   onExpire?: () => void;
+  compact?: boolean;
 }
 
-export default function CountdownTimer({ endTime, onExpire }: Props) {
+export default function CountdownTimer({ endTime, onExpire, compact = false }: Props) {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
@@ -36,9 +37,14 @@ export default function CountdownTimer({ endTime, onExpire }: Props) {
     return () => clearInterval(interval);
   }, [endTime, onExpire]);
 
+  if (compact) {
+    return <Text style={styles.compactTimer}>{timeLeft}</Text>;
+  }
+
   return <Text style={styles.timer}>Temps restant : {timeLeft}</Text>;
 }
 
 const styles = StyleSheet.create({
   timer: { fontSize: 16, color: 'red', marginVertical: 8 },
+  compactTimer: { fontSize: 13, color: '#e8c547', fontWeight: '600' },
 });
