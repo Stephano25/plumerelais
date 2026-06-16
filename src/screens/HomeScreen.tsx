@@ -1,18 +1,16 @@
+// screens/HomeScreen.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useStories } from '../contexts/StoriesContext'; // ✅ Ajout
 import { supabase } from '../services/supabase';
 import { Story } from '../types';
 import StoryCard from '../components/StoryCard';
 
 export default function HomeScreen({ navigation }: any) {
   const { user, signOut } = useAuth();
-  const [participating, setParticipating] = useState<Story[]>([]);
-  const [open, setOpen] = useState<Story[]>([]);
-  const [finished, setFinished] = useState<Story[]>([]);
-  const isMounted = useRef(true);
+  const { participatingStories, openStories, finishedStories, refreshStories } = useStories(); // ✅ Utiliser le contexte
 
-  // Déconnexion : on remplace la route Login dans le même navigateur
   const handleLogout = useCallback(() => {
     Alert.alert(
       'Déconnexion',
@@ -24,7 +22,6 @@ export default function HomeScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             await signOut();
-            // Retour à Login
             navigation.replace('Login');
           },
         },
@@ -32,7 +29,6 @@ export default function HomeScreen({ navigation }: any) {
     );
   }, [signOut, navigation]);
 
-  // Ajout d’un bouton dans l’en-tête (optionnel, mais le bouton principal sera dans le contenu)
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -43,52 +39,9 @@ export default function HomeScreen({ navigation }: any) {
     });
   }, [navigation, handleLogout]);
 
-  const fetchStories = useCallback(async () => {
-    if (!user || !isMounted.current) return;
-    try {
-      const { data: participants } = await supabase
-        .from('story_participants')
-        .select('story_id')
-        .eq('user_id', user.id);
-      const pIds = participants?.map(p => p.story_id) || [];
-
-      if (pIds.length) {
-        const { data } = await supabase.from('stories').select('*').in('id', pIds);
-        if (isMounted.current) setParticipating(data as Story[] || []);
-      } else if (isMounted.current) setParticipating([]);
-
-      let openQuery = supabase
-        .from('stories')
-        .select('*')
-        .eq('is_public', true)
-        .in('status', ['open', 'in_progress']);
-      if (pIds.length > 0) openQuery = openQuery.not('id', 'in', `(${pIds.join(',')})`);
-      const { data: openData } = await openQuery;
-      if (isMounted.current) setOpen(openData as Story[] || []);
-
-      const { data: finishedData } = await supabase
-        .from('stories')
-        .select('*')
-        .eq('status', 'finished')
-        .order('created_at', { ascending: false });
-      if (isMounted.current) setFinished(finishedData as Story[] || []);
-    } catch (error) {
-      console.error('Erreur fetchStories:', error);
-    }
-  }, [user]);
-
   useEffect(() => {
-    isMounted.current = true;
-    fetchStories();
-    const subscription = supabase
-      .channel('stories_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => fetchStories())
-      .subscribe();
-    return () => {
-      isMounted.current = false;
-      subscription.unsubscribe();
-    };
-  }, [fetchStories]);
+    refreshStories(); // ✅ Rafraîchir au montage
+  }, [refreshStories]);
 
   const renderSection = (title: string, stories: Story[], emptyMsg: string) => (
     <View style={styles.section}>
@@ -108,11 +61,10 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {renderSection('📚 Mes histoires', participating, 'Aucune histoire rejointe')}
-      {renderSection('🌍 Histoires ouvertes', open, 'Aucune histoire ouverte')}
-      {renderSection('🏁 Terminées', finished, 'Aucune histoire terminée')}
+      {renderSection('📚 Mes histoires', participatingStories, 'Aucune histoire rejointe')}
+      {renderSection('🌍 Histoires ouvertes', openStories, 'Aucune histoire ouverte')}
+      {renderSection('🏁 Terminées', finishedStories, 'Aucune histoire terminée')}
       
-      {/* Bouton de déconnexion principal, bien visible */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Se déconnecter</Text>
       </TouchableOpacity>
@@ -137,7 +89,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 20,
     marginTop: 20,
-    marginBottom: 80, // pour ne pas cacher le FAB
+    marginBottom: 80,
   },
   logoutButtonText: {
     color: '#fff',
@@ -154,7 +106,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0px 2px 4px rgba(0,0,0,0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     elevation: 5,
   },
   fabText: { color: 'white', fontSize: 28, fontWeight: 'bold', lineHeight: 32 },

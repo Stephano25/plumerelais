@@ -1,6 +1,7 @@
+// src/navigation/AppNavigator.tsx
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // ✅ correct
 import { ActivityIndicator, View } from 'react-native';
 
 import LoginScreen from '../screens/LoginScreen';

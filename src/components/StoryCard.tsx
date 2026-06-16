@@ -25,6 +25,7 @@ export default function StoryCard({ story, onPress }: Props) {
   );
 }
 
+// components/StoryCard.tsx
 const styles = StyleSheet.create({
   card: {
     width: 160,
@@ -32,13 +33,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    // Correction : remplacer elevation + shadow* par boxShadow
-    boxShadow: Platform.OS === 'web' ? '0 2px 4px rgba(0,0,0,0.1)' : undefined,
-    elevation: Platform.OS === 'android' ? 2 : undefined,
-    shadowColor: Platform.OS === 'ios' ? '#000' : undefined,
-    shadowOffset: Platform.OS === 'ios' ? { width: 0, height: 2 } : undefined,
-    shadowOpacity: Platform.OS === 'ios' ? 0.1 : undefined,
-    shadowRadius: Platform.OS === 'ios' ? 4 : undefined,
+    // ⚠️ Correction : remplacer boxShadow par shadow* pour toutes les plateformes
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   cover: { width: '100%', height: 100 },
   placeholder: { backgroundColor: '#ddd' },

@@ -1,3 +1,4 @@
+// components/CountdownTimer.tsx
 import React, { useEffect, useState } from 'react';
 import { Text, StyleSheet } from 'react-native';
 
@@ -10,10 +11,17 @@ export default function CountdownTimer({ endTime, onExpire }: Props) {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
+    const endDate = new Date(endTime);
+    if (isNaN(endDate.getTime())) {
+      setTimeLeft('Date invalide');
+      return;
+    }
+
     const interval = setInterval(() => {
       const now = new Date().getTime();
-      const end = new Date(endTime).getTime();
+      const end = endDate.getTime();
       const diff = end - now;
+      
       if (diff <= 0) {
         clearInterval(interval);
         setTimeLeft('Tour terminé');
@@ -24,8 +32,9 @@ export default function CountdownTimer({ endTime, onExpire }: Props) {
         setTimeLeft(`${minutes}m ${seconds}s`);
       }
     }, 1000);
+    
     return () => clearInterval(interval);
-  }, [endTime]);
+  }, [endTime, onExpire]);
 
   return <Text style={styles.timer}>Temps restant : {timeLeft}</Text>;
 }
