@@ -1,12 +1,15 @@
-// screens/ProfileScreen.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, StatusBar } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { colors, radii, typography } from '../types/theme';
+import Avatar from '../components/Avatar';
 
 export default function ProfileScreen({ navigation }: any) {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isLoggingOut } = useAuth();
 
   const handleLogout = () => {
+    if (isLoggingOut) return;
+
     Alert.alert(
       'Déconnexion',
       'Voulez-vous vous déconnecter ?',
@@ -16,8 +19,13 @@ export default function ProfileScreen({ navigation }: any) {
           text: 'Déconnecter',
           style: 'destructive',
           onPress: async () => {
-            await signOut();
-            navigation.replace('Login');
+            try {
+              await signOut();
+              // Pas de navigation.replace ici : AppNavigator bascule
+              // automatiquement sur la pile Login dès que `user` devient null.
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de se déconnecter');
+            }
           },
         },
       ]
@@ -25,82 +33,172 @@ export default function ProfileScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>👤 Mon profil</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Pseudo :</Text>
-          <Text style={styles.value}>{profile?.username || 'Non défini'}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Email :</Text>
-          <Text style={styles.value}>{user?.email}</Text>
-        </View>
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Réputation :</Text>
-          <Text style={styles.value}>⭐ {profile?.reputation || 0}</Text>
-        </View>
-        <TouchableOpacity style={styles.button} onPress={handleLogout}>
-          <Text style={styles.buttonText}>Se déconnecter</Text>
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" />
+
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Mon profil</Text>
+        <View style={{ width: 36 }} />
       </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.avatarWrap}>
+          <Avatar username={profile?.username || '?'} avatarUrl={profile?.avatar_url} size={88} />
+          <Text style={styles.username}>{profile?.username || 'Auteur'}</Text>
+          <View style={styles.repChip}>
+            <Text style={styles.repChipText}>⭐ {profile?.reputation || 0} réputation</Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <InfoRow label="Pseudo" value={profile?.username || 'Non défini'} />
+          <InfoRow label="Email" value={user?.email || '—'} />
+          <InfoRow label="Réputation" value={`⭐ ${profile?.reputation || 0}`} last />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.logoutBtn, isLoggingOut && styles.logoutBtnDisabled]}
+          onPress={handleLogout}
+          activeOpacity={0.85}
+          disabled={isLoggingOut}
+        >
+          <Text style={styles.logoutBtnText}>
+            {isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 60 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+function InfoRow({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
+  return (
+    <View style={[styles.infoRow, !last && styles.infoRowBorder]}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f5f5f5', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    padding: 20 
+  root: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 52,
+    paddingBottom: 14,
+    backgroundColor: colors.bg2,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(124,92,191,0.2)',
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.bg3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(124,92,191,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backArrow: {
+    fontSize: 18,
+    color: colors.t1,
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.t1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingBottom: 20,
+  },
+  avatarWrap: {
+    alignItems: 'center',
+    marginBottom: 28,
+    marginTop: 8,
+  },
+  username: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.t1,
+    marginTop: 14,
+  },
+  repChip: {
+    marginTop: 8,
+    backgroundColor: 'rgba(232,197,71,0.12)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(232,197,71,0.3)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  repChipText: {
+    fontSize: 13,
+    color: colors.accent,
+    fontWeight: '600',
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    backgroundColor: colors.bg2,
+    borderRadius: radii.lg,
+    borderWidth: 0.5,
+    borderColor: 'rgba(124,92,191,0.2)',
+    paddingHorizontal: 18,
+    marginBottom: 24,
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    marginBottom: 24, 
-    textAlign: 'center', 
-    color: '#6200ee' 
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
   },
-  infoRow: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginBottom: 16, 
-    paddingBottom: 8, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#eee' 
+  infoRowBorder: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(124,92,191,0.12)',
   },
-  label: { 
-    fontSize: 16, 
-    fontWeight: '600', 
-    color: '#555' 
+  infoLabel: {
+    ...typography.label,
+    color: colors.t3,
   },
-  value: { 
-    fontSize: 16, 
-    color: '#333' 
+  infoValue: {
+    fontSize: 14,
+    color: colors.t1,
+    fontWeight: '500',
   },
-  button: { 
-    backgroundColor: '#dc3545', 
-    padding: 14, 
-    borderRadius: 12, 
-    alignItems: 'center', 
-    marginTop: 20 
+  logoutBtn: {
+    backgroundColor: 'rgba(232,92,106,0.1)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(232,92,106,0.35)',
+    borderRadius: radii.lg,
+    paddingVertical: 15,
+    alignItems: 'center',
   },
-  buttonText: { 
-    color: 'white', 
-    fontWeight: 'bold', 
-    fontSize: 16 
+  logoutBtnDisabled: {
+    opacity: 0.5,
+  },
+  logoutBtnText: {
+    color: colors.red,
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

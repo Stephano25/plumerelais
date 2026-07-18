@@ -10,6 +10,7 @@ export interface Story {
   id: string;
   title: string;
   cover_image: string | null;
+  cover_url?: string | null;
   opening_paragraph: string;
   max_contributions: number;
   turn_duration_minutes: number;
@@ -18,6 +19,7 @@ export interface Story {
   current_turn: number;
   created_at: string;
   created_by: string;
+  author_id?: string;
 }
 
 export interface Turn {

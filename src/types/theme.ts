@@ -1,36 +1,17 @@
-// theme.ts — Plume Relais Design System
 export const colors = {
-  // Purple ramp (brand)
-  purple50:  '#EEEDFE',
-  purple100: '#CECBF6',
-  purple200: '#AFA9EC',
-  purple400: '#7F77DD',
-  purple600: '#534AB7',
-  purple800: '#3C3489',
-  purple900: '#26215C',
-
-  // Dark backgrounds
-  bg:  '#0E0B1A',
+  bg: '#0E0B1A',
   bg2: '#16112A',
   bg3: '#1E1838',
   bg4: '#2A2245',
-
-  // Text
   t1: '#F5F0FF',
   t2: '#C4B8E0',
   t3: '#8A7BAA',
-
-  // Accent
-  accent:  '#E8C547',
+  accent: '#E8C547',
   accent2: '#F5E08A',
-
-  // Semantic
   green: '#4ECBA0',
-  red:   '#E85C6A',
-  blue:  '#5BAEF5',
-
-  // Purple aliases
-  primary:  '#7C5CBF',
+  red: '#E85C6A',
+  blue: '#5BAEF5',
+  primary: '#7C5CBF',
   primary2: '#9B7DE0',
   primary3: '#C4A8F0',
   primary4: '#EDE6FA',
@@ -42,23 +23,6 @@ export const radii = {
   lg: 20,
   xl: 28,
   full: 9999,
-};
-
-export const shadows = {
-  card: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 6,
-  },
-  cardLg: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 40,
-    elevation: 10,
-  },
 };
 
 export const typography = {

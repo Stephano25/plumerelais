@@ -1,6 +1,6 @@
-// components/CountdownTimer.tsx
 import React, { useEffect, useState } from 'react';
 import { Text, StyleSheet } from 'react-native';
+import { colors } from '../types/theme';
 
 interface Props {
   endTime: string;
@@ -22,7 +22,7 @@ export default function CountdownTimer({ endTime, onExpire, compact = false }: P
       const now = new Date().getTime();
       const end = endDate.getTime();
       const diff = end - now;
-      
+
       if (diff <= 0) {
         clearInterval(interval);
         setTimeLeft('Tour terminé');
@@ -33,7 +33,7 @@ export default function CountdownTimer({ endTime, onExpire, compact = false }: P
         setTimeLeft(`${minutes}m ${seconds}s`);
       }
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, [endTime, onExpire]);
 
@@ -45,6 +45,6 @@ export default function CountdownTimer({ endTime, onExpire, compact = false }: P
 }
 
 const styles = StyleSheet.create({
-  timer: { fontSize: 16, color: 'red', marginVertical: 8 },
-  compactTimer: { fontSize: 13, color: '#e8c547', fontWeight: '600' },
+  timer: { fontSize: 16, color: colors.red, marginVertical: 8 },
+  compactTimer: { fontSize: 13, color: colors.accent, fontWeight: '600' },
 });

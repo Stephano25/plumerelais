@@ -1,8 +1,8 @@
-// src/navigation/AppNavigator.tsx
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useAuth } from '../contexts/AuthContext'; // ✅ correct
+import { useAuth } from '../contexts/AuthContext';
 import { ActivityIndicator, View } from 'react-native';
+import { colors } from '../types/theme';
 
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -21,34 +21,28 @@ export default function AppNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#6200ee" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: '#6200ee' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: 'bold' },
-      }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!user ? (
         <>
-          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
         </>
       ) : (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Plume Relais' }} />
-          <Stack.Screen name="CreateStory" component={CreateStoryScreen} options={{ title: 'Nouvelle histoire' }} />
-          <Stack.Screen name="StoryDetail" component={StoryDetailScreen} options={{ title: 'Histoire' }} />
-          <Stack.Screen name="Propose" component={ProposeScreen} options={{ title: 'Proposer une suite' }} />
-          <Stack.Screen name="Vote" component={VoteScreen} options={{ title: 'Voter' }} />
-          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Mon profil' }} />
-          <Stack.Screen name="FinishedStory" component={FinishedStoryScreen} options={{ title: 'Histoire complète' }} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="CreateStory" component={CreateStoryScreen} />
+          <Stack.Screen name="StoryDetail" component={StoryDetailScreen} />
+          <Stack.Screen name="Propose" component={ProposeScreen} />
+          <Stack.Screen name="Vote" component={VoteScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="FinishedStory" component={FinishedStoryScreen} />
         </>
       )}
     </Stack.Navigator>

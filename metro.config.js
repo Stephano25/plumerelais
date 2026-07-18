@@ -1,4 +1,11 @@
 const { getDefaultConfig } = require('expo/metro-config');
+
 const config = getDefaultConfig(__dirname);
-config.resolver.sourceExts = [...config.resolver.sourceExts, 'web.tsx', 'web.ts', 'web.jsx', 'web.js'];
+
+// Ignorer les modules Node.js
+config.resolver.extraNodeModules = {
+  stream: require.resolve('stream-browserify'),
+  ws: require.resolve('react-native-websocket'),
+};
+
 module.exports = config;

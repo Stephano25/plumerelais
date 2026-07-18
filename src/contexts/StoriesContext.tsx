@@ -19,58 +19,58 @@ export const StoriesProvider = ({ children }: { children: ReactNode }) => {
   const [finishedStories, setFinishedStories] = useState<Story[]>([]);
 
   const refreshStories = useCallback(async () => {
-    if (!user) return;
-
-    // 1. Récupérer les IDs des histoires auxquelles l'utilisateur participe
-    const { data: participants } = await supabase
-      .from('story_participants')
-      .select('story_id')
-      .eq('user_id', user.id);
-    const pIds = participants?.map(p => p.story_id) || [];
-
-    // 2. Histoires auxquelles je participe
-    if (pIds.length) {
-      const { data } = await supabase.from('stories').select('*').in('id', pIds);
-      setParticipatingStories(data as Story[] || []);
-    } else {
+    if (!user) {
       setParticipatingStories([]);
+      setOpenStories([]);
+      setFinishedStories([]);
+      return;
     }
 
-    // 3. Histoires ouvertes (publiques, non rejointes)
-    let openQuery = supabase
-      .from('stories')
-      .select('*')
-      .eq('is_public', true)
-      .in('status', ['open', 'in_progress']);
+    try {
+      const { data: participants } = await supabase
+        .from('story_participants')
+        .select('story_id')
+        .eq('user_id', user.id);
+      
+      const pIds = participants?.map(p => p.story_id) || [];
 
-    // Ajouter le filtre NOT IN uniquement s'il y a des IDs à exclure
-    if (pIds.length > 0) {
-      openQuery = openQuery.not('id', 'in', `(${pIds.join(',')})`);
+      if (pIds.length > 0) {
+        const { data } = await supabase
+          .from('stories')
+          .select('*')
+          .in('id', pIds);
+        setParticipatingStories(data as Story[] || []);
+      } else {
+        setParticipatingStories([]);
+      }
+
+      let openQuery = supabase
+        .from('stories')
+        .select('*')
+        .eq('is_public', true)
+        .in('status', ['open', 'in_progress']);
+
+      if (pIds.length > 0) {
+        openQuery = openQuery.not('id', 'in', `(${pIds.join(',')})`);
+      }
+
+      const { data: open } = await openQuery;
+      setOpenStories(open as Story[] || []);
+
+      const { data: finished } = await supabase
+        .from('stories')
+        .select('*')
+        .eq('status', 'finished')
+        .order('created_at', { ascending: false });
+      setFinishedStories(finished as Story[] || []);
+    } catch (error) {
+      console.error('Erreur refreshStories:', error);
     }
-
-    const { data: open } = await openQuery;
-    setOpenStories(open as Story[] || []);
-
-    // 4. Histoires terminées
-    const { data: finished } = await supabase
-      .from('stories')
-      .select('*')
-      .eq('status', 'finished')
-      .order('created_at', { ascending: false });
-    setFinishedStories(finished as Story[] || []);
   }, [user]);
 
   useEffect(() => {
     refreshStories();
-    const subscription = supabase
-      .channel('stories_all')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stories' }, () => {
-        refreshStories();
-      })
-      .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
+    // Pas de souscription WebSocket
   }, [refreshStories]);
 
   return (

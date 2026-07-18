@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Constants from 'expo-constants';
 
-// Récupère l'URL et la clé depuis .env (EXPO_PUBLIC_) ou depuis app.json (extra)
 const supabaseUrl =
   process.env.EXPO_PUBLIC_SUPABASE_URL ||
   Constants.expoConfig?.extra?.supabaseUrl;
@@ -13,21 +12,21 @@ const supabaseAnonKey =
   Constants.expoConfig?.extra?.supabaseAnonKey;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('🔴 Missing variables:', { supabaseUrl, supabaseAnonKey });
-  throw new Error(
-    'Missing Supabase environment variables. Check your .env file and restart with --clear.'
-  );
+  console.warn('Missing Supabase environment variables. Using fallback.');
 }
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10,
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl || 'https://your-project.supabase.co',
+  supabaseAnonKey || 'your-anon-key',
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
     },
-  },
-});
+    realtime: {
+      enabled: false,
+    },
+  }
+);

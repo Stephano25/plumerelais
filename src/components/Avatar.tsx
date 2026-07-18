@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import { colors } from '../types/theme';
 
 interface Props {
   username: string;
@@ -20,6 +21,10 @@ export default function Avatar({ username, avatarUrl, size = 40 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  fallback: { backgroundColor: '#6200ee', justifyContent: 'center', alignItems: 'center' },
+  fallback: {
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   fallbackText: { color: 'white', fontWeight: 'bold' },
 });
